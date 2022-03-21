@@ -32,19 +32,17 @@ router.get("/thumbnail", async (req, res) => {
     res.send({ error: "Error generating thumbnail." });
     return;
   }
+  res.setHeader("Content-Type", "image/png");
+  res.send(newimage);
   const formData = new FormData();
   formData.append("image", newimage, "image.png");
   await axios
     .post("https://api.na.cx/upload", formData, {
       headers: formData.getHeaders(),
     })
-    .then((nares) => {
-      res.redirect(nares.data.url);
-      thumbnail.insertOne({ original: src, thumbnail: nares.data.url });
+    .then(async (nares) => {
+      await thumbnail.insertOne({ original: src, thumbnail: nares.data.url });
     })
-    .catch(() => {
-      res.setHeader("Content-Type", "image/png");
-      res.send(newimage);
-    });
+    .catch(() => {});
 });
 export default router;
