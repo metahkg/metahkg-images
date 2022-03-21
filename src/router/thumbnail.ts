@@ -3,8 +3,7 @@ import isUrlHttp from "is-url-http";
 import { Router } from "express";
 import FormData from "form-data";
 import axios from "axios";
-import { MongoClient } from "mongodb";
-import { mongouri } from "../common";
+import { client } from "../common";
 const router = Router();
 /**
  * GET /thumbnail?src=${image url}
@@ -16,8 +15,6 @@ router.get("/thumbnail", async (req, res) => {
     return;
   }
   const src = String(req.query.src);
-  const client = new MongoClient(mongouri);
-  await client.connect();
   const thumbnail = client.db("images").collection("thumbnail");
   const r = await thumbnail.findOne({ original: src });
   if (r) {
