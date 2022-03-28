@@ -4,6 +4,7 @@ import { Router } from "express";
 import FormData from "form-data";
 import axios from "axios";
 import { client } from "../common";
+import sizeOf from "buffer-image-size";
 const router = Router();
 /**
  * GET /thumbnail?src=${image url}
@@ -15,9 +16,9 @@ router.get("/thumbnail", async (req, res) => {
     return;
   }
   const src = String(req.query.src);
-  const thumbnail = client.db("images").collection("thumbnail");
-  const r = await thumbnail.findOne({ original: src });
-  if (r) {
+  const images = client.db("images").collection("images");
+  const r = await images.findOne({ original: src });
+  if (r?.thumbnail) {
     res.redirect(r.thumbnail);
     return;
   }
@@ -38,7 +39,15 @@ router.get("/thumbnail", async (req, res) => {
       headers: formData.getHeaders(),
     })
     .then(async (nares) => {
-      await thumbnail.insertOne({ original: src, thumbnail: nares.data.url });
+      const dimensions = sizeOf(newimage);
+      const insertContent = {
+        original: src,
+        thumbnail: nares.data.url,
+        thumbnailHeight: dimensions.height,
+        thumbnailWidth: dimensions.width,
+      };
+      if (!r) await images.insertOne(insertContent);
+      else await images.updateOne({ original: src }, { $set: insertContent });
     })
     .catch(() => {});
 });
