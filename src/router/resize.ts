@@ -9,12 +9,15 @@ router.get("/resize", async (req, res) => {
   const src = decodeURIComponent(String(req.query.src));
   const width = Number(req.query.width) || undefined;
   const height = Number(req.query.height) || undefined;
+  // @ts-ignore
+  const fit: "cover" | "contain" = String(req.query.fit) || "contain";
   const schema = Type.Object({
     src: Type.String({ format: "uri" }),
     width: Type.Optional(Type.Number()),
     height: Type.Optional(Type.Number()),
+    fit: Type.Union([Type.Literal("contain"), Type.Literal("cover")]),
   });
-  if (!ajv.validate(schema, { src, width, height }) || !isUrlHttp(src)) {
+  if (!ajv.validate(schema, { src, width, height, fit }) || !isUrlHttp(src)) {
     res.status(400);
     res.send({ error: "Bad Request." });
     return;
@@ -25,7 +28,7 @@ router.get("/resize", async (req, res) => {
       try {
         const fetchedImg = Buffer.from(imgres.data, "utf-8");
         const resizedImg = await sharp(fetchedImg)
-          .resize({ width: width, height: height, fit: "contain" })
+          .resize({ width: width, height: height, fit: fit })
           .toBuffer();
         res.setHeader("Content-Type", "image/png");
         res.send(resizedImg);
