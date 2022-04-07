@@ -10,7 +10,7 @@ router.get("/resize", async (req, res) => {
   const width = Number(req.query.width) || undefined;
   const height = Number(req.query.height) || undefined;
   // @ts-ignore
-  const fit: "cover" | "contain" = String(req.query.fit) || "contain";
+  const fit: "cover" | "contain" = String(req.query.fit || "contain");
   const schema = Type.Object({
     src: Type.String({ format: "uri" }),
     width: Type.Optional(Type.Number()),
