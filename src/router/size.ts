@@ -5,12 +5,12 @@ import axios from "axios";
 import { client } from "../common";
 const router = Router();
 router.get("/size", async (req, res) => {
-  if (!req.query.src || !isUrlHttp(String(req.query.src))) {
+  const src = decodeURIComponent(String(req.query.src));
+  if (!req.query.src || !isUrlHttp(src)) {
     res.status(400);
     res.send({ error: "Bad Request." });
     return;
   }
-  const src = String(req.query.src);
   const images = client.db("images").collection("images");
   const image = await images.findOne({ original: src });
   if (image?.width && image?.height) {

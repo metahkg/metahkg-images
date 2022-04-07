@@ -6,7 +6,7 @@ import { ajv } from "../lib/ajv";
 import isUrlHttp from "is-url-http";
 const router = Router();
 router.get("/resize", async (req, res) => {
-  const src = String(req.query.src);
+  const src = decodeURIComponent(String(req.query.src));
   const width = Number(req.query.width) || undefined;
   const height = Number(req.query.height) || undefined;
   const schema = Type.Object({
