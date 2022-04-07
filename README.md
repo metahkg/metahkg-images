@@ -1,3 +1,3 @@
-# i.wcyat.me
+# Metahkg images api
 
-Images api. Currently supports thumbnails.
+The images api for metahkg.
