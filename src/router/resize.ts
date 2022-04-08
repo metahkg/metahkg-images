@@ -13,8 +13,8 @@ router.get("/resize", async (req, res) => {
   const fit: "cover" | "contain" = String(req.query.fit || "contain");
   const schema = Type.Object({
     src: Type.String({ format: "uri" }),
-    width: Type.Optional(Type.Number()),
-    height: Type.Optional(Type.Number()),
+    width: Type.Optional(Type.Number({ maximum: 1000, minimum: 10 })),
+    height: Type.Optional(Type.Number({ maximum: 1000, minimum: 10 })),
     fit: Type.Union([Type.Literal("contain"), Type.Literal("cover")]),
   });
   if (!ajv.validate(schema, { src, width, height, fit }) || !isUrlHttp(src)) {
