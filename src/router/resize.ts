@@ -17,18 +17,21 @@ router.get("/resize", async (req, res) => {
     height: Type.Optional(Type.Number({ maximum: 1000, minimum: 10 })),
     fit: Type.Union([Type.Literal("contain"), Type.Literal("cover")]),
   });
-  if (!ajv.validate(schema, { src, width, height, fit }) || !isUrlHttp(src)) {
-    res.status(400);
-    res.send({ error: "Bad Request." });
-    return;
-  }
+  if (!ajv.validate(schema, { src, width, height, fit }) || !isUrlHttp(src))
+    return res.status(400).send({ error: "Bad Request." });
+
   axios
     .get(src, { responseType: "arraybuffer" })
     .then(async (imgres) => {
       try {
         const fetchedImg = Buffer.from(imgres.data, "utf-8");
         const resizedImg = await sharp(fetchedImg)
-          .resize({ width: width, height: height, fit: fit })
+          .resize({
+            width: width,
+            height: height,
+            fit: fit,
+          })
+          .toFormat("png")
           .toBuffer();
         res.setHeader("Content-Type", "image/png");
         res.send(resizedImg);
