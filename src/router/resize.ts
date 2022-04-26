@@ -4,19 +4,23 @@ import axios from "axios";
 import { Type } from "@sinclair/typebox";
 import { ajv } from "../lib/ajv";
 import isUrlHttp from "is-url-http";
+
 const router = Router();
+
 router.get("/resize", async (req, res) => {
   const src = decodeURIComponent(String(req.query.src));
   const width = Number(req.query.width) || undefined;
   const height = Number(req.query.height) || undefined;
   // @ts-ignore
   const fit: "cover" | "contain" = String(req.query.fit || "contain");
+
   const schema = Type.Object({
     src: Type.String({ format: "uri" }),
     width: Type.Optional(Type.Number({ maximum: 1000, minimum: 10 })),
     height: Type.Optional(Type.Number({ maximum: 1000, minimum: 10 })),
     fit: Type.Union([Type.Literal("contain"), Type.Literal("cover")]),
   });
+
   if (!ajv.validate(schema, { src, width, height, fit }) || !isUrlHttp(src))
     return res.status(400).send({ error: "Bad Request." });
 
@@ -25,6 +29,7 @@ router.get("/resize", async (req, res) => {
     .then(async (imgres) => {
       try {
         const fetchedImg = Buffer.from(imgres.data, "utf-8");
+
         const resizedImg = await sharp(fetchedImg)
           .resize({
             width: width,
@@ -33,16 +38,16 @@ router.get("/resize", async (req, res) => {
           })
           .toFormat("png")
           .toBuffer();
-        res.setHeader("Content-Type", "image/png");
-        res.send(resizedImg);
+
+        return res.setHeader("Content-Type", "image/png").send(resizedImg);
       } catch (err) {
-        res.status(500);
-        res.send({ error: "Error resizing image." });
+        console.error(err);
+        return res.status(500).send({ error: "Error resizing image." });
       }
     })
-    .catch(() => {
-      res.status(500);
-      res.send({ error: "Error fetching image." });
+    .catch((err) => {
+      console.error(err);
+      return res.status(500).send({ error: "Error fetching image." });
     });
 });
 export default router;

@@ -3,7 +3,7 @@ import isUrlHttp from "is-url-http";
 import { Router } from "express";
 import FormData from "form-data";
 import axios from "axios";
-import { client } from "../common";
+import { imagesCl } from "../common";
 import sizeOf from "buffer-image-size";
 const router = Router();
 /**
@@ -11,44 +11,48 @@ const router = Router();
  */
 router.get("/thumbnail", async (req, res) => {
   const src = decodeURIComponent(String(req.query.src));
-  if (!req.query.src || !isUrlHttp(src)) {
-    res.status(400);
-    res.send({ error: "Bad Request." });
-    return;
-  }
-  const images = client.db("images").collection("images");
-  const r = await images.findOne({ original: src });
-  if (r?.thumbnail) {
-    res.redirect(r.thumbnail);
-    return;
-  }
+
+  if (!req.query.src || !isUrlHttp(src))
+    return res.status(400).send({ error: "Bad Request." });
+  
+  const image = await imagesCl.findOne({ original: src });
+
+  if (image?.thumbnail) return res.redirect(image.thumbnail);
+
   let newimage: Buffer;
+
   try {
     newimage = await imageThumbnail({ uri: src });
-  } catch {
-    res.status(500);
-    res.send({ error: "Error generating thumbnail." });
-    return;
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send({ error: "Error generating thumbnail." });
   }
-  res.setHeader("Content-Type", "image/png");
-  res.send(newimage);
+
+  res.setHeader("Content-Type", "image/png").send(newimage);
+
   const formData = new FormData();
   formData.append("image", newimage, "image.png");
+
   await axios
     .post("https://api.na.cx/upload", formData, {
       headers: formData.getHeaders(),
     })
-    .then(async (nares) => {
+    .then(async (nares: { data: { url: string } }) => {
       const dimensions = sizeOf(newimage);
+
       const insertContent = {
         original: src,
         thumbnail: nares.data.url,
         thumbnailHeight: dimensions.height,
         thumbnailWidth: dimensions.width,
       };
-      if (!r) await images.insertOne(insertContent);
-      else await images.updateOne({ original: src }, { $set: insertContent });
+
+      if (!image) await imagesCl.insertOne(insertContent);
+
+      else await imagesCl.updateOne({ original: src }, { $set: insertContent });
     })
-    .catch(() => {});
+    .catch((err) => {
+      console.error(err);
+    });
 });
 export default router;
