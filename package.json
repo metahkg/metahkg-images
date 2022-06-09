@@ -28,7 +28,7 @@
     "image-thumbnail": "^1.0.14",
     "is-url-http": "^2.2.11",
     "minipass": "^3.1.6",
-    "mongodb": "^4.4.1",
+    "mongodb": "^4.6.0",
     "morgan": "^1.10.0",
     "sharp": "^0.30.3"
   }
