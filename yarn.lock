@@ -900,13 +900,12 @@ is-lambda@^1.0.1:
   resolved "https://registry.yarnpkg.com/is-lambda/-/is-lambda-1.0.1.tgz#3d9877899e6a53efc0160504cde15f82e6f061d5"
   integrity sha1-PZh3iZ5qU+/AFgUEzeFfgubwYdU=
 
-is-url-http@^2.2.11:
-  version "2.2.11"
-  resolved "https://registry.yarnpkg.com/is-url-http/-/is-url-http-2.2.11.tgz#0da35d8153b99059e60bf862adde646e67ecf1fc"
-  integrity sha512-IafKn+3Ke/KkaeVF4N3IwXHbkhQoMATMkxkLqKjCRpM1+2HqOK1lQ1c6P/SOcZDOJ0V7KtKr3pb5XetY/Wq/0Q==
+is-url-http@^2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/is-url-http/-/is-url-http-2.3.2.tgz#374bbbbda24464253ec5cfd63c87f3c21438f28d"
+  integrity sha512-STrCIU/YFLgmxmOMUIqyAcxLpLtEveSluJV6UqOTdHb6k0UTt0UzhC22AMBgVus6fE9SJnO/9ftMc+Z1D/Z9Yw==
   dependencies:
-    re2 "~1.17.2"
-    url-regex-safe "~3.0.0"
+    url-http "~1.0.2"
 
 isarray@~1.0.0:
   version "1.0.0"
@@ -1739,6 +1738,14 @@ uri-js@^4.2.2:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
+
+url-http@~1.0.2:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/url-http/-/url-http-1.0.3.tgz#6dbe1be32e25ca787e9a9d63a685da522b66b05c"
+  integrity sha512-0MVIG6Vf4mqtpo+V5yAVS9DhhHb2KGw84ggQwDqtHDi5vFqyQASHynkvEb3t46bUUxAorMBJ+iqUGMB3m5268w==
+  dependencies:
+    re2 "~1.17.2"
+    url-regex-safe "~3.0.0"
 
 url-regex-safe@~3.0.0:
   version "3.0.0"
