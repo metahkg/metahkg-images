@@ -14,7 +14,7 @@ router.get("/thumbnail", async (req, res) => {
 
   if (!req.query.src || !isUrlHttp(src))
     return res.status(400).send({ error: "Bad Request." });
-  
+
   const image = await imagesCl.findOne({ original: src });
 
   if (image?.thumbnail) return res.redirect(image.thumbnail);
@@ -48,7 +48,6 @@ router.get("/thumbnail", async (req, res) => {
       };
 
       if (!image) await imagesCl.insertOne(insertContent);
-
       else await imagesCl.updateOne({ original: src }, { $set: insertContent });
     })
     .catch((err) => {
