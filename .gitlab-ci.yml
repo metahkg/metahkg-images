@@ -47,3 +47,6 @@ docker-build:
     - if: "$CI_COMMIT_BRANCH"
       exists:
         - Dockerfile
+
+include:
+  - template: Auto-DevOps.gitlab-ci.yml
