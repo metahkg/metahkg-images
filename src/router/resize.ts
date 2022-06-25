@@ -37,7 +37,7 @@ export default function (
       try {
         const { data } = await axios.get(src, {
           responseType: "arraybuffer",
-          maxContentLength: 1024 * 1024 * 2,
+          maxContentLength: 1024 * 1024 * 10,
           headers: { "Content-Type": "image/*", accept: "image/*" },
         });
 
@@ -45,9 +45,9 @@ export default function (
 
         const resizedImg = await sharp(fetchedImg)
           .resize({
-            width: width,
-            height: height,
-            fit: fit,
+            width,
+            height,
+            fit,
           })
           .toFormat("png")
           .toBuffer();

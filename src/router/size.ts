@@ -25,7 +25,7 @@ export default function (
       try {
         const { data } = await axios.get(src, {
           responseType: "arraybuffer",
-          maxContentLength: 1024 * 1024 * 2,
+          maxContentLength: 1024 * 1024 * 10,
           headers: { "Content-Type": "image/*", accept: "image/*" },
         });
 
@@ -33,7 +33,7 @@ export default function (
         const dimensions = sizeOf(fetchedimg);
 
         res.send({ height: dimensions.height, width: dimensions.width });
-        
+
         const insertContent = {
           original: src,
           width: dimensions.width,
