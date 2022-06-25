@@ -1,42 +1,55 @@
-import { Router } from "express";
 import sizeOf from "buffer-image-size";
 import isUrlHttp from "is-url-http";
 import axios from "axios";
 import { imagesCl } from "../common";
-const router = Router();
-router.get("/size", async (req, res) => {
-  const src = decodeURIComponent(String(req.query.src));
+import { FastifyInstance, FastifyPluginOptions, FastifyRequest } from "fastify";
 
-  if (!req.query.src || !isUrlHttp(src))
-    return res.status(400).send({ error: "Bad Request." });
+export default function (
+  fastify: FastifyInstance,
+  opts: FastifyPluginOptions,
+  done: () => void
+) {
+  fastify.get(
+    "/size",
+    async (req: FastifyRequest<{ Querystring: { src: string } }>, res) => {
+      const src = decodeURIComponent(String(req.query.src));
 
-  const image = await imagesCl.findOne({ original: src });
+      if (!req.query.src || !isUrlHttp(src))
+        return res.status(400).send({ error: "Bad Request." });
 
-  if (image?.width && image?.height)
-    return res.send({ width: image.width, height: image.height });
+      const image = await imagesCl.findOne({ original: src });
 
-  axios
-    .get(src, { responseType: "arraybuffer" })
-    .then((imgres) => {
-      try {
-        const fetchedimg = Buffer.from(imgres.data, "utf-8");
-        const dimensions = sizeOf(fetchedimg);
-        res.send({ height: dimensions.height, width: dimensions.width });
-        const insertContent = {
-          original: src,
-          width: dimensions.width,
-          height: dimensions.height,
-        };
-        if (!image) imagesCl.insertOne(insertContent);
-        else imagesCl.updateOne({ original: src }, { $set: insertContent });
-      } catch (err) {
-        console.error(err);
-        return res.status(500).send({ error: "Error getting size." });
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      return res.status(500).send({ error: "Error fetching image." });
-    });
-});
-export default router;
+      if (image?.width && image?.height)
+        return res.send({ width: image.width, height: image.height });
+
+      axios
+        .get(src, {
+          responseType: "arraybuffer",
+          maxContentLength: 1024 * 1024 * 2,
+          headers: { "Content-Type": "image/*", accept: "image/*" },
+        })
+        .then((imgres) => {
+          try {
+            const fetchedimg = Buffer.from(imgres.data, "utf-8");
+            const dimensions = sizeOf(fetchedimg);
+            res.send({ height: dimensions.height, width: dimensions.width });
+            const insertContent = {
+              original: src,
+              width: dimensions.width,
+              height: dimensions.height,
+            };
+            if (!image) imagesCl.insertOne(insertContent);
+            else imagesCl.updateOne({ original: src }, { $set: insertContent });
+          } catch (err) {
+            console.error(err);
+            return res.status(500).send({ error: "Error getting size." });
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          return res.status(500).send({ error: "Error fetching image. Image size might be too large." });
+        });
+    }
+  );
+  done();
+}

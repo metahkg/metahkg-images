@@ -1,17 +1,25 @@
-import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
-import router from "./router";
+import router from "./router/router";
 import { client } from "./common";
-import morgan from "morgan";
-const app = express();
+import Fastify from "fastify";
+import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
+
 dotenv.config();
-client.connect();
-app.disable("x-powered-by");
-app.set("trust proxy", true);
-app.use(cors());
-app.use(morgan("dev"));
-app.use(router);
-app.listen(process.env.port || 3000, function () {
-  console.log(`listening at port ${process.env.port || 3000}`);
+
+const fastify = Fastify({
+  logger: true,
+  trustProxy: true,
+});
+
+fastify.register(cors);
+fastify.register(rateLimit, { max: 100, timeWindow: "1 minute" });
+
+fastify.register(router);
+
+client.connect().then(() => {
+  const port = Number(process.env.port) || 3000;
+  fastify.listen({ port, host: "0.0.0.0" }, () => {
+    console.log(`listening at port ${port}`);
+  });
 });

@@ -1,57 +1,70 @@
 import imageThumbnail from "image-thumbnail";
 import isUrlHttp from "is-url-http";
-import { Router } from "express";
 import FormData from "form-data";
 import axios from "axios";
 import { imagesCl } from "../common";
 import sizeOf from "buffer-image-size";
-const router = Router();
-/**
- * GET /thumbnail?src=${image url}
- */
-router.get("/thumbnail", async (req, res) => {
-  const src = decodeURIComponent(String(req.query.src));
+import { FastifyInstance, FastifyPluginOptions, FastifyRequest } from "fastify";
 
-  if (!req.query.src || !isUrlHttp(src))
-    return res.status(400).send({ error: "Bad Request." });
+export default function (
+  fastify: FastifyInstance,
+  opts: FastifyPluginOptions,
+  done: () => void
+) {
+  /**
+   * GET /thumbnail?src=${image url}
+   */
+  fastify.get(
+    "/thumbnail",
+    async (req: FastifyRequest<{ Querystring: { src: string } }>, res) => {
+      const src = decodeURIComponent(String(req.query.src));
 
-  const image = await imagesCl.findOne({ original: src });
+      if (!req.query.src || !isUrlHttp(src))
+        return res.status(400).send({ error: "Bad Request." });
 
-  if (image?.thumbnail) return res.redirect(image.thumbnail);
+      const image = await imagesCl.findOne({ original: src });
 
-  let newimage: Buffer;
+      if (image?.thumbnail) return res.redirect(image.thumbnail);
 
-  try {
-    newimage = await imageThumbnail({ uri: src });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send({ error: "Error generating thumbnail." });
-  }
+      let newimage: Buffer;
 
-  res.setHeader("Content-Type", "image/png").send(newimage);
+      try {
+        newimage = await imageThumbnail({ uri: src });
+      } catch (err) {
+        console.error(err);
+        return res.status(500).send({ error: "Error generating thumbnail." });
+      }
 
-  const formData = new FormData();
-  formData.append("image", newimage, "image.png");
+      res.header("Content-Type", "image/png").send(newimage);
 
-  await axios
-    .post("https://api.na.cx/upload", formData, {
-      headers: formData.getHeaders(),
-    })
-    .then(async (nares: { data: { url: string } }) => {
-      const dimensions = sizeOf(newimage);
+      const formData = new FormData();
+      formData.append("image", newimage, "image.png");
 
-      const insertContent = {
-        original: src,
-        thumbnail: nares.data.url,
-        thumbnailHeight: dimensions.height,
-        thumbnailWidth: dimensions.width,
-      };
+      await axios
+        .post("https://api.na.cx/upload", formData, {
+          headers: formData.getHeaders(),
+        })
+        .then(async (nares: { data: { url: string } }) => {
+          const dimensions = sizeOf(newimage);
 
-      if (!image) await imagesCl.insertOne(insertContent);
-      else await imagesCl.updateOne({ original: src }, { $set: insertContent });
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-});
-export default router;
+          const insertContent = {
+            original: src,
+            thumbnail: nares.data.url,
+            thumbnailHeight: dimensions.height,
+            thumbnailWidth: dimensions.width,
+          };
+
+          if (!image) await imagesCl.insertOne(insertContent);
+          else
+            await imagesCl.updateOne(
+              { original: src },
+              { $set: insertContent }
+            );
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  );
+  done();
+}
