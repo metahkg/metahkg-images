@@ -35,7 +35,11 @@ export default function (
         return res.status(400).send({ error: "Bad Request." });
 
       axios
-        .get(src, { responseType: "arraybuffer" })
+        .get(src, {
+          responseType: "arraybuffer",
+          maxContentLength: 1024 * 1024 * 2,
+          headers: { "Content-Type": "image/*", accept: "image/*" },
+        })
         .then(async (imgres) => {
           try {
             const fetchedImg = Buffer.from(imgres.data, "utf-8");
