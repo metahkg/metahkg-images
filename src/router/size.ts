@@ -33,7 +33,7 @@ export default function (
         const dimensions = sizeOf(fetchedimg);
 
         res.send({ height: dimensions.height, width: dimensions.width });
-        
+
         const insertContent = {
           original: src,
           width: dimensions.width,
