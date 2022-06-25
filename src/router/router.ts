@@ -9,6 +9,7 @@ export default function (
   done: () => void
 ) {
   fastify.get("/", (req, res) => {
+    console.log("redirect")
     return res.code(301).redirect("https://gitlab.com/metahkg/metahkg-images");
   });
   fastify.register(thumbnail);

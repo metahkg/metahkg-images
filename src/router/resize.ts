@@ -34,35 +34,29 @@ export default function (
       if (!ajv.validate(schema, { src, width, height, fit }) || !isUrlHttp(src))
         return res.status(400).send({ error: "Bad Request." });
 
-      axios
-        .get(src, {
+      try {
+        const { data } = await axios.get(src, {
           responseType: "arraybuffer",
           maxContentLength: 1024 * 1024 * 2,
           headers: { "Content-Type": "image/*", accept: "image/*" },
-        })
-        .then(async (imgres) => {
-          try {
-            const fetchedImg = Buffer.from(imgres.data, "utf-8");
-
-            const resizedImg = await sharp(fetchedImg)
-              .resize({
-                width: width,
-                height: height,
-                fit: fit,
-              })
-              .toFormat("png")
-              .toBuffer();
-
-            return res.header("Content-Type", "image/png").send(resizedImg);
-          } catch (err) {
-            console.error(err);
-            return res.status(500).send({ error: "Error resizing image." });
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-          return res.status(500).send({ error: "Error fetching image." });
         });
+
+        const fetchedImg = Buffer.from(data, "utf-8");
+
+        const resizedImg = await sharp(fetchedImg)
+          .resize({
+            width: width,
+            height: height,
+            fit: fit,
+          })
+          .toFormat("png")
+          .toBuffer();
+
+        res.header("Content-Type", "image/png").send(resizedImg);
+      } catch (err) {
+        console.error(err);
+        return res.status(500).send({ error: "Error resizing image." });
+      }
     }
   );
   done();
