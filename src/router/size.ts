@@ -47,11 +47,9 @@ export default function (
         })
         .catch((err) => {
           console.error(err);
-          return res
-            .status(500)
-            .send({
-              error: "Error fetching image. Image size might be too large.",
-            });
+          return res.status(500).send({
+            error: "Error fetching image. Image size might be too large.",
+          });
         });
     }
   );
