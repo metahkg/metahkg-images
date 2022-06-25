@@ -22,14 +22,19 @@ export default function (
       if (!req.query.src || !isUrlHttp(src))
         return res.status(400).send({ error: "Bad Request." });
 
-      const image = await imagesCl.findOne({ original: src });
-
-      if (image?.thumbnail) return res.redirect(image.thumbnail);
+      const imageData = await imagesCl.findOne({ original: src });
+      if (imageData?.thumbnail) return res.redirect(imageData.thumbnail);
 
       let newimage: Buffer;
 
+      const { data: image } = await axios.get(src, {
+        responseType: "arraybuffer",
+        maxContentLength: 1024 * 1024 * 10,
+        headers: { "Content-Type": "image/*", accept: "image/*" },
+      });
+
       try {
-        newimage = await imageThumbnail({ uri: src });
+        newimage = await imageThumbnail(image);
       } catch (err) {
         console.error(err);
         return res.status(500).send({ error: "Error generating thumbnail." });
@@ -54,7 +59,7 @@ export default function (
             thumbnailWidth: dimensions.width,
           };
 
-          if (!image) await imagesCl.insertOne(insertContent);
+          if (!imageData) await imagesCl.insertOne(insertContent);
           else
             await imagesCl.updateOne(
               { original: src },
