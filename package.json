@@ -9,7 +9,7 @@
     "lint": "prettier --write src",
     "deploy": "yarn run build && yarn run start",
     "docker": "cd docker && docker-compose up -d --build",
-    "docker:prebuilt": "cd docker && docker-compose -f docker-compose-prebuilt.yml up -d --build",
+    "docker:prebuilt": "cd docker && docker-compose -f docker-compose-prebuilt.yml pull && docker-compose -f docker-compose-prebuilt.yml up -d --build",
     "test": "echo 'no tests'"
   },
   "dependencies": {
