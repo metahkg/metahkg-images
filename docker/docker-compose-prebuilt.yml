@@ -16,7 +16,7 @@ services:
       - metahkg-images-mongo
       - metahkg-images-tor
     networks:
-      - metahkg-images-network`
+      - metahkg-images-network
   metahkg-images-tor:
     image: peterdavehello/tor-socks-proxy
     container_name: metahkg-images-tor
