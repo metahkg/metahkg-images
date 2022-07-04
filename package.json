@@ -2,7 +2,7 @@
   "license": "MIT",
   "author": "wcyat",
   "name": "metahkg-images",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "scripts": {
     "start": "node dist/index.js",
     "build": "tsc",
