@@ -1,13 +1,13 @@
 import sharp from "sharp";
-import axios from "axios";
 import { Type } from "@sinclair/typebox";
 import { ajv } from "../lib/ajv";
 import isUrlHttp from "is-url-http";
 import { FastifyInstance, FastifyPluginOptions, FastifyRequest } from "fastify";
+import proxied from "../lib/proxy";
 
 export default function (
   fastify: FastifyInstance,
-  opts: FastifyPluginOptions,
+  _opts: FastifyPluginOptions,
   done: () => void
 ) {
   fastify.get(
@@ -35,7 +35,7 @@ export default function (
         return res.status(400).send({ error: "Bad Request." });
 
       try {
-        const { data } = await axios.get(src, {
+        const { data } = await proxied.get(src, {
           responseType: "arraybuffer",
           maxContentLength: 1024 * 1024 * 10,
           headers: { "Content-Type": "image/*", accept: "image/*" },

@@ -8,8 +8,19 @@ services:
     environment:
       port: ${port}
       DB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@metahkg-images-mongo:${MONGO_PORT}
+      proxy_host: ${proxy_host}
+      proxy_port: ${proxy_port}
+      proxy_auth: ${proxy_auth}
+      no_proxy: ${no_proxy}
     depends_on:
       - metahkg-images-mongo
+      - metahkg-images-tor
+    networks:
+      - metahkg-images-network`
+  metahkg-images-tor:
+    image: peterdavehello/tor-socks-proxy
+    container_name: metahkg-images-tor
+    restart: always
     networks:
       - metahkg-images-network
   metahkg-images-mongo:

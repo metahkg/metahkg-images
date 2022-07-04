@@ -1,8 +1,8 @@
 import sizeOf from "buffer-image-size";
 import isUrlHttp from "is-url-http";
-import axios from "axios";
 import { imagesCl } from "../common";
 import { FastifyInstance, FastifyPluginOptions, FastifyRequest } from "fastify";
+import proxied from "../lib/proxy";
 
 export default function (
   fastify: FastifyInstance,
@@ -23,7 +23,7 @@ export default function (
         return res.send({ width: image.width, height: image.height });
 
       try {
-        const { data } = await axios.get(src, {
+        const { data } = await proxied.get(src, {
           responseType: "arraybuffer",
           maxContentLength: 1024 * 1024 * 10,
           headers: { "Content-Type": "image/*", accept: "image/*" },

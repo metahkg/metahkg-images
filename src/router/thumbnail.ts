@@ -1,14 +1,14 @@
 import imageThumbnail from "image-thumbnail";
 import isUrlHttp from "is-url-http";
 import FormData from "form-data";
-import axios from "axios";
 import { imagesCl } from "../common";
 import sizeOf from "buffer-image-size";
 import { FastifyInstance, FastifyPluginOptions, FastifyRequest } from "fastify";
+import proxied from "../lib/proxy";
 
 export default function (
   fastify: FastifyInstance,
-  opts: FastifyPluginOptions,
+  _opts: FastifyPluginOptions,
   done: () => void
 ) {
   /**
@@ -27,7 +27,7 @@ export default function (
 
       let newimage: Buffer;
 
-      const { data: image } = await axios.get(src, {
+      const { data: image } = await proxied.get(src, {
         responseType: "arraybuffer",
         maxContentLength: 1024 * 1024 * 10,
         headers: { "Content-Type": "image/*", accept: "image/*" },
@@ -45,7 +45,7 @@ export default function (
       const formData = new FormData();
       formData.append("image", newimage, "image.png");
 
-      await axios
+      await proxied
         .post("https://api.na.cx/upload", formData, {
           headers: formData.getHeaders(),
         })
